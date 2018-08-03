@@ -1,0 +1,15 @@
+{
+  "root": true,
+  "extends": "simenb-base",
+  "overrides": [
+    {
+      "files": "test.js",
+      "env": {
+        "jest": true
+      }
+    }
+  ],
+  "rules": {
+    "prettier/prettier": ["error", { "trailingComma": "all" }]
+  }
+}

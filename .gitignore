@@ -1,0 +1,11 @@
+lib/
+
+node_modules/
+.idea/
+typings/
+coverage/
+*.log
+build/
+dist/
+yarn-error.log
+yarn.log
