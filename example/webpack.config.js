@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const AddAssetHtmlPlugin = require('../lib/index');
+const WebpackBar = require('webpackbar');
 
 module.exports = {
   // Normally CWD
@@ -15,9 +16,11 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin(),
     new AddAssetHtmlPlugin({
-      filepath: 'entry.js',
+      filepath: './entry.js',
       hash: true,
-      includeSourcemap: false
+      includeSourcemap: false,
+      isEmit: false,
     }),
+    new WebpackBar(),
   ],
 };

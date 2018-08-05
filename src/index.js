@@ -7,6 +7,18 @@ export default class AddAssetHtmlPlugin {
 
   /* istanbul ignore next: this would be integration tests */
   apply(compiler) {
+    // compiler.hooks.compile.tap('compilation', compilation => {
+    //   compilation.plugin(
+    //     'html-webpack-plugin-before-html-generation',
+    //     (htmlPluginData, callback) =>
+    //       addAllAssetsToCompilation(
+    //         this.assets,
+    //         compilation,
+    //         htmlPluginData,
+    //         callback,
+    //       ),
+    //   );
+    // })
     compiler.plugin('compilation', compilation => {
       compilation.plugin(
         'html-webpack-plugin-before-html-generation',

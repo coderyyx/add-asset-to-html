@@ -1,5 +1,6 @@
 import path from 'path';
 import crypto from 'crypto';
+import MD5 from 'md5.js';
 import pEachSeries from 'p-each-series';
 import micromatch from 'micromatch';
 // const chalk = require('chalk')
@@ -26,8 +27,8 @@ function resolvePublicPath(compilation, filename) {
 }
 
 function resolveOutput(compilation, addedFilename, outputPath) {
-  console.log(chalk.green('resolveOutput--->'))
-  console.log(chalk.green(`${addedFilename} | ${outputPath}`))
+  console.log(chalk.green('resolveOutput--->'));
+  console.log(chalk.green(`${addedFilename} | ${outputPath}`));
   if (outputPath && outputPath.length) {
     /* eslint-disable no-param-reassign */
     compilation.assets[`${outputPath}/${addedFilename}`] =
@@ -38,8 +39,18 @@ function resolveOutput(compilation, addedFilename, outputPath) {
   }
 }
 
+function getBaseName(filename, compilation) {
+  filename = path.resolve(compilation.compiler.context, filename);
+  const basename = path.basename(filename);
+  return basename;
+}
 
-function addJsAndCssToHtmlAsset(htmlPluginData, typeOfAsset, resolvedPath, beDependent) {
+function addJsAndCssToHtmlAsset(
+  htmlPluginData,
+  typeOfAsset,
+  resolvedPath,
+  beDependent,
+) {
   let operator = 'push';
   if (typeOfAsset === 'js' && beDependent === true) {
     operator = 'unshift';
@@ -58,7 +69,8 @@ async function addFileToAssets(
     publicPath,
     outputPath,
     files = [],
-    beDependent = true //js是否被依赖 类似jquery， 仅js有效
+    beDependent = true, // js是否被依赖 类似jquery， 仅js有效
+    isEmit = true, // 是否输出文件
   },
 ) {
   if (!filepath) {
@@ -78,17 +90,20 @@ async function addFileToAssets(
       return Promise.resolve(null);
     }
   }
-
-  const addedFilename = await htmlPluginData.plugin.addFileToAssets(
-    filepath,
-    compilation,
-  );
-
+  // 是否输出文件到compilation.assets
   let suffix = '';
-  if (hash) {
+  const addedFilename = isEmit
+    ? await htmlPluginData.plugin.addFileToAssets(filepath, compilation)
+    : getBaseName(filepath, compilation);
+
+  if (hash && isEmit) {
     const md5 = crypto.createHash('md5');
     md5.update(compilation.assets[addedFilename].source());
     suffix = `?${md5.digest('hex').substr(0, 20)}`;
+  } else if (hash && !isEmit) {
+    suffix = new MD5()
+      .update((Math.random() * 100).toFixed(5).toString())
+      .digest('hex');
   }
 
   const resolvedPublicPath =
@@ -97,7 +112,12 @@ async function addFileToAssets(
       : ensureTrailingSlash(publicPath);
   const resolvedPath = `${resolvedPublicPath}${addedFilename}${suffix}`;
   // 添加连接到html
-  addJsAndCssToHtmlAsset(htmlPluginData, typeOfAsset, resolvedPath, beDependent);
+  addJsAndCssToHtmlAsset(
+    htmlPluginData,
+    typeOfAsset,
+    resolvedPath,
+    beDependent,
+  );
   // 自定义输出文件目录
   resolveOutput(compilation, addedFilename, outputPath);
 
@@ -134,4 +154,4 @@ async function addAssets(assets, compilation, htmlPluginData, callback) {
   }
 }
 
-module.exports = addAssets
+module.exports = addAssets;
